@@ -45,15 +45,12 @@ fn add_h_end_tag(output_line: &mut String, mut _htag: bool, level: i8) {
     }
 }
 
-
 fn add_h_open_tag(output_line: &mut String, mut _htag: bool, line_contents: &String, level: i8) -> () {
     _htag = true;
     let _header_tag = String::from(format!("h{}", level));
     output_line.push_str(format!("\n\n<{}>", _header_tag).as_ref());
     output_line.push_str(&line_contents[2..]);
 }
-
-
 
 fn parse_markdown_file(_filename: &str) {
     println!("{}", get_title());
@@ -76,27 +73,7 @@ fn parse_markdown_file(_filename: &str) {
 
     for line in reader.lines() {
         let line_contents = line.unwrap().to_string();
-        let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
-        let mut output_line = String::new();
-
-        let v = first_char.pop();
-        //eprintln!("v = {:?}", v);
-        match v {
-            Some('#') => {
-                add_p_end_tag(&mut output_line, _ptag);
-                add_h_end_tag(&mut output_line, _htag, 1);
-                add_h_open_tag(&mut output_line, _htag,  &line_contents,1)
-            }
-            _ => {
-                add_p_open_tag(&mut output_line, _ptag);
-                output_line.push_str(&line_contents);
-            }
-        }
-
-        add_p_end_tag(&mut output_line, _ptag);
-        add_h_end_tag(&mut output_line, _htag, 1);
-
-        tokens.push(output_line);
+        process_line(_ptag, _htag, &mut tokens, line_contents);
     }
 
     let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
@@ -111,6 +88,26 @@ fn parse_markdown_file(_filename: &str) {
     }
 
     println!("[ INFO ] Parsing complete!");
+}
+
+fn process_line(mut _ptag: bool, mut _htag: bool, tokens: &mut Vec<String>, line_contents: String) {
+    let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
+    let mut output_line = String::new();
+    let v = first_char.pop();
+    match v {
+        Some('#') => {
+            add_p_end_tag(&mut output_line, _ptag);
+            add_h_end_tag(&mut output_line, _htag, 1);
+            add_h_open_tag(&mut output_line, _htag, &line_contents, 1)
+        }
+        _ => {
+            add_p_open_tag(&mut output_line, _ptag);
+            output_line.push_str(&line_contents);
+        }
+    }
+    add_p_end_tag(&mut output_line, _ptag);
+    add_h_end_tag(&mut output_line, _htag, 1);
+    tokens.push(output_line);
 }
 
 fn main() {
