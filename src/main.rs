@@ -23,6 +23,38 @@ fn get_title() -> String {
     return the_title;
 }
 
+fn add_p_end_tag(output_line: &mut String, mut _ptag: bool) {
+    if _ptag {
+        _ptag = false;
+        output_line.push_str("</p>\n");
+    }
+}
+
+fn add_p_open_tag(output_line: &mut String, mut _ptag: bool) {
+    if !_ptag {
+        _ptag = true;
+        output_line.push_str("\n<p>");
+    }
+}
+
+fn add_h_end_tag(output_line: &mut String, mut _htag: bool, level: i8) {
+    if _htag {
+        _htag = false;
+        let _header_tag = String::from(format!("</{}{}>\n\n", "h", level));
+        output_line.push_str(String::from(_header_tag).as_ref());
+    }
+}
+
+
+fn add_h_open_tag(output_line: &mut String, mut _htag: bool, line_contents: &String, level: i8) -> () {
+    _htag = true;
+    let _header_tag = String::from(format!("h{}", level));
+    output_line.push_str(format!("\n\n<{}>", _header_tag).as_ref());
+    output_line.push_str(&line_contents[2..]);
+}
+
+
+
 fn parse_markdown_file(_filename: &str) {
     println!("{}", get_title());
     println!("[ INFO ] Parsing file {}...", _filename);
@@ -43,7 +75,7 @@ fn parse_markdown_file(_filename: &str) {
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
-        let mut line_contents = line.unwrap().to_string();
+        let line_contents = line.unwrap().to_string();
         let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
         let mut output_line = String::new();
 
@@ -51,39 +83,20 @@ fn parse_markdown_file(_filename: &str) {
         //eprintln!("v = {:?}", v);
         match v {
             Some('#') => {
-                if _ptag {
-                    _ptag = false;
-                    output_line.push_str("</p>\n");
-                }
-                if _htag {
-                    _htag = false;
-                    output_line.push_str("</h1>\n");
-                }
-                _htag = true;
-                output_line.push_str("\n\n<h1>");
-                output_line.push_str(&line_contents[2..]);
+                add_p_end_tag(&mut output_line, _ptag);
+                add_h_end_tag(&mut output_line, _htag, 1);
+                add_h_open_tag(&mut output_line, _htag,  &line_contents,1)
             }
             _ => {
-                if !_ptag {
-                    _ptag = true;
-                    output_line.push_str("\n<p>");
-                }
+                add_p_open_tag(&mut output_line, _ptag);
                 output_line.push_str(&line_contents);
             }
         }
 
-        if _ptag {
-            _ptag = false;
-            output_line.push_str("</p>\n");
-        }
-        if _htag {
-            _htag = false;
-            output_line.push_str("</h1>\n");
-        }
+        add_p_end_tag(&mut output_line, _ptag);
+        add_h_end_tag(&mut output_line, _htag, 1);
 
-        if output_line != "<p></p>\n" {
-            tokens.push(output_line);
-        }
+        tokens.push(output_line);
     }
 
     let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
