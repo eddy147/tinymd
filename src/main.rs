@@ -63,9 +63,6 @@ fn parse_markdown_file(_filename: &str) {
         Ok(value) => value,
     };
 
-    let mut _ptag: bool = false;
-    let mut _htag: bool = false;
-
     // Store all our tokens in here
     let mut tokens: Vec<String> = Vec::new();
 
@@ -73,7 +70,7 @@ fn parse_markdown_file(_filename: &str) {
 
     for line in reader.lines() {
         let line_contents = line.unwrap().to_string();
-        process_line(_ptag, _htag, &mut tokens, line_contents);
+        process_line( &mut tokens, line_contents);
     }
 
     let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
@@ -90,10 +87,13 @@ fn parse_markdown_file(_filename: &str) {
     println!("[ INFO ] Parsing complete!");
 }
 
-fn process_line(mut _ptag: bool, mut _htag: bool, tokens: &mut Vec<String>, line_contents: String) {
+fn process_line(tokens: &mut Vec<String>, line_contents: String) {
+    let mut _ptag: bool = false;
+    let mut _htag: bool = false;
     let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
     let mut output_line = String::new();
     let v = first_char.pop();
+
     match v {
         Some('#') => {
             add_p_end_tag(&mut output_line, _ptag);
