@@ -70,28 +70,32 @@ fn parse_markdown_file(_filename: &str) {
 
     for line in reader.lines() {
         let line_contents = line.unwrap().to_string();
-        process_line( &mut tokens, line_contents);
+        md_2_html(&mut tokens, line_contents);
     }
 
     let mut outputfile = create_outputfile(&_filename);
 
-    for t in &tokens {
+    write_all_to_outputfile(&mut tokens, &mut outputfile);
+
+    println!("[ INFO ] Parsing complete!");
+}
+
+fn write_all_to_outputfile(tokens: &mut Vec<String>, outputfile: &mut File) {
+    for t in tokens {
         outputfile.write_all(t.as_bytes())
             .expect("[ ERROR ] Could not write to output file!")
     }
-
-    println!("[ INFO ] Parsing complete!");
 }
 
 fn create_outputfile(_filename: &&str) -> File {
     let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
     output_filename.push_str(".html");
-    let mut outputfile = File::create(output_filename.to_string())
+    let outputfile = File::create(output_filename.to_string())
         .expect("[ ERROR ] Could not create output file!");
     outputfile
 }
 
-fn process_line(tokens: &mut Vec<String>, line_contents: String) {
+fn md_2_html(tokens: &mut Vec<String>, line_contents: String) {
     let mut _ptag: bool = false;
     let mut _htag: bool = false;
     let mut first_char: Vec<char> = line_contents.chars().take(1).collect();
