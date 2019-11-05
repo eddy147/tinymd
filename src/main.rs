@@ -73,11 +73,7 @@ fn parse_markdown_file(_filename: &str) {
         process_line( &mut tokens, line_contents);
     }
 
-    let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
-    output_filename.push_str(".html");
-
-    let mut outputfile = File::create(output_filename.to_string())
-        .expect("[ ERROR ] Could not create output file!");
+    let mut outputfile = create_outputfile(&_filename);
 
     for t in &tokens {
         outputfile.write_all(t.as_bytes())
@@ -85,6 +81,14 @@ fn parse_markdown_file(_filename: &str) {
     }
 
     println!("[ INFO ] Parsing complete!");
+}
+
+fn create_outputfile(_filename: &&str) -> File {
+    let mut output_filename = String::from(&_filename[.._filename.len() - 3]);
+    output_filename.push_str(".html");
+    let mut outputfile = File::create(output_filename.to_string())
+        .expect("[ ERROR ] Could not create output file!");
+    outputfile
 }
 
 fn process_line(tokens: &mut Vec<String>, line_contents: String) {
